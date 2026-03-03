@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "name": "Ahmad Rizki Pratama",
+    "age": 14,
+    "domicile": "Jakarta Selatan, DKI Jakarta",
+    "parentsOccupation": "Ibu bekerja sebagai pedagang kecil, Ayah sebagai buruh harian",
+    "description": "Ahmad adalah anak yang ceria dan aktif di sekolah. Ia memiliki minat besar dalam bidang matematika dan sains. Keluarganya tinggal di rumah sederhana dan membutuhkan bantuan untuk biaya pendidikan dan kebutuhan sehari-hari. Ahmad sangat berharap dapat melanjutkan pendidikan ke jenjang yang lebih tinggi.",
+    "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=500&fit=crop",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "2",
+    "name": "Siti Nurhaliza",
+    "age": 12,
+    "domicile": "Bandung, Jawa Barat",
+    "parentsOccupation": "Ibu sebagai penjahit, Ayah sudah meninggal",
+    "description": "Siti adalah anak perempuan yang rajin dan berbakat dalam seni. Ia suka menggambar dan membaca buku. Setelah ayahnya meninggal, ibunya bekerja keras sebagai penjahit untuk menghidupi keluarga. Siti membutuhkan dukungan untuk biaya sekolah dan perlengkapan belajar agar dapat terus mengembangkan bakatnya.",
+    "image": "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&h=500&fit=crop",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "3",
+    "name": "Budi Santoso",
+    "age": 15,
+    "domicile": "Surabaya, Jawa Timur",
+    "parentsOccupation": "Ibu sebagai pemulung, Ayah sebagai tukang ojek",
+    "description": "Budi adalah anak yang tekun dan memiliki semangat belajar yang tinggi. Meskipun kondisi ekonomi keluarganya terbatas, ia tidak pernah menyerah untuk mengejar cita-citanya menjadi dokter. Ia aktif dalam kegiatan sekolah dan selalu membantu orang tuanya setelah pulang sekolah. Budi membutuhkan bantuan untuk biaya pendidikan dan kebutuhan kesehatan.",
+    "image": "https://images.unsplash.com/photo-1605713288610-00c1c630ca1e?w=500&h=500&fit=crop",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "4",
+    "name": "Putri Ayu Lestari",
+    "age": 13,
+    "domicile": "Yogyakarta, DI Yogyakarta",
+    "parentsOccupation": "Ibu sebagai pembantu rumah tangga, Ayah sebagai tukang bangunan",
+    "description": "Putri adalah anak yang cerdas dan memiliki kepedulian tinggi terhadap sesama. Ia sering membantu teman-temannya yang kesulitan dalam belajar. Keluarganya tinggal di daerah pinggiran kota dengan kondisi rumah yang sederhana. Putri sangat membutuhkan dukungan untuk melanjutkan pendidikannya dan mewujudkan impiannya menjadi guru.",
+    "image": "https://images.unsplash.com/photo-1607453998774-d533f65dac99?w=500&h=500&fit=crop",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+]

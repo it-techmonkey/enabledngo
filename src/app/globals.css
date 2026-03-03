@@ -1,0 +1,17 @@
+@import url("../../public/assets/fonts/css2.css");
+@import "tailwindcss";
+
+/* Mobile: keep keyboard open while typing (prevent focus loss after first character) */
+@layer base {
+  input,
+  textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus which can cause keyboard to dismiss */
+    touch-action: manipulation; /* Reduces 300ms tap delay and odd touch behavior */
+  }
+  @media (min-width: 768px) {
+    input,
+    textarea {
+      font-size: inherit; /* Restore normal sizing on desktop */
+    }
+  }
+}
