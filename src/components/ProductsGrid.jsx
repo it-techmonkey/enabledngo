@@ -46,7 +46,6 @@ export default async function ProductsGrid() {
                                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                                         loading="lazy"
                                         decoding="async"
-                                        onError={(e) => e.target.src = '/Girly.png'}
                                     />
                                     {product.status === 'Available' && (
                                         <div className="absolute top-4 left-4">
