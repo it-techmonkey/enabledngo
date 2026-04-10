@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Users } from 'lucide-react';
+const CHILDREN_CACHE_KEY = 'enabledngo_children_cache_v1';
 
 export default function BeADonorPage() {
   const router = useRouter();
@@ -13,9 +14,24 @@ export default function BeADonorPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
+    const cached = sessionStorage.getItem(CHILDREN_CACHE_KEY);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length) {
+          setChildren(parsed);
+          setLoading(false);
+        }
+      } catch (_) {}
+    }
+
     fetch('/api/children')
       .then((r) => r.json())
-      .then((data) => setChildren(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const normalized = Array.isArray(data) ? data : [];
+        setChildren(normalized);
+        sessionStorage.setItem(CHILDREN_CACHE_KEY, JSON.stringify(normalized));
+      })
       .catch(() => setChildren([]))
       .finally(() => setLoading(false));
   }, []);

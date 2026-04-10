@@ -1,25 +1,15 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { getProducts } from '@/lib/db';
 
-export default function ProductsGrid() {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        fetch('/api/products')
-            .then(res => res.json())
-            .then(data => {
-                setProducts(data.slice(0, 4)); // Show top 4 on home
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Products fetch error:', err);
-                setLoading(false);
-            });
-    }, []);
+export default async function ProductsGrid() {
+    let products = [];
+    try {
+        const data = await getProducts();
+        products = (Array.isArray(data) ? data : []).slice(0, 4); // Show top 4 on home
+    } catch (err) {
+        console.error('Products fetch error:', err);
+    }
 
     return (
         <section className="py-16 px-4 sm:px-6 md:px-10 lg:px-20 bg-gray-50">
@@ -37,17 +27,7 @@ export default function ProductsGrid() {
                     </Link>
                 </div>
 
-                {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {[...Array(4)].map((_, i) => (
-                            <div key={i} className="bg-white rounded-3xl p-4 h-80 animate-pulse border border-gray-100">
-                                <div className="bg-gray-100 w-full h-40 rounded-2xl mb-4"></div>
-                                <div className="bg-gray-100 h-4 w-3/4 rounded mb-2"></div>
-                                <div className="bg-gray-100 h-4 w-1/2 rounded"></div>
-                            </div>
-                        ))}
-                    </div>
-                ) : products.length === 0 ? (
+                {products.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-[40px] border border-gray-100">
                         <p className="text-gray-400 font-bold">No products currently available.</p>
                     </div>

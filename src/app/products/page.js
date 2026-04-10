@@ -7,6 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { FileDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 8;
+const PRODUCTS_CACHE_KEY = 'enabledngo_products_cache_v1';
 
 export default function ProductsPage() {
   const { addToCart, cartCount } = useCart();
@@ -23,12 +24,23 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setLoading(true);
+        const cached = sessionStorage.getItem(PRODUCTS_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length) {
+            setAllProducts(parsed);
+            setLoading(false);
+          }
+        } else {
+          setLoading(true);
+        }
         const res = await fetch('/api/products');
         if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
         const data = await res.json();
         // Handle both array and { products: [] } shaped responses
-        setAllProducts(Array.isArray(data) ? data : (data.products || data.data || []));
+        const normalized = Array.isArray(data) ? data : (data.products || data.data || []);
+        setAllProducts(normalized);
+        sessionStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(normalized));
       } catch (err) {
         console.error('Products fetch error:', err);
         setError(err.message);

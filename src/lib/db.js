@@ -64,11 +64,15 @@ export async function deleteRow(filename, id) {
             try {
                 const { error } = await withTimeout(supabase.from(table).delete().eq('id', String(id)));
                 if (error) throw error;
+                return true;
             } catch (err) {
                 console.error(`Supabase delete error for ${table}:`, err);
+                return false;
             }
         }
+        return false;
     }
+    return true;
 }
 
 // Supabase helper: Maps JSON filenames to table names
@@ -270,8 +274,12 @@ export async function writeData(filename, data) {
                 return true;
             } catch (err) {
                 console.error(`Supabase write error for ${table}:`, err);
+                // When Supabase is configured, do not silently fall back to local file.
+                // Returning false makes API routes surface the failure to admins.
+                return false;
             }
         }
+        return false;
     }
 
     try {

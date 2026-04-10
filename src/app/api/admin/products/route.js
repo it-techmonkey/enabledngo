@@ -18,7 +18,13 @@ export async function POST(req) {
         }
 
         products.push(product);
-        await saveProducts(products);
+        const ok = await saveProducts(products);
+        if (!ok) {
+            return new Response(JSON.stringify({ error: 'Failed to save product to database' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
         return new Response(JSON.stringify({ success: true, product }), {
             status: 201,
@@ -46,7 +52,13 @@ export async function PUT(req) {
         }
 
         products[idx] = { ...products[idx], ...updatedProduct };
-        await saveProducts(products);
+        const ok = await saveProducts(products);
+        if (!ok) {
+            return new Response(JSON.stringify({ error: 'Failed to update product in database' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
         return new Response(JSON.stringify({ success: true, product: products[idx] }), {
             status: 200,
@@ -81,8 +93,20 @@ export async function DELETE(req) {
             });
         }
 
-        await deleteRow('products.json', productId);
-        await saveProducts(filtered);
+        const deleted = await deleteRow('products.json', productId);
+        if (!deleted) {
+            return new Response(JSON.stringify({ error: 'Failed to delete product from database' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+        const ok = await saveProducts(filtered);
+        if (!ok) {
+            return new Response(JSON.stringify({ error: 'Failed to sync product list in database' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
         return new Response(JSON.stringify({ success: true }), {
             status: 200,

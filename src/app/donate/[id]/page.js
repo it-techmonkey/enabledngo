@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { ChevronLeft, Lightbulb } from 'lucide-react';
+const CHILDREN_CACHE_KEY = 'enabledngo_children_cache_v1';
 
 const DONATION_AMOUNTS = [
     { label: 'Rp 50.000', value: 50000 },
@@ -35,14 +36,27 @@ export default function DonatePage() {
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
+        const pickChild = (data) => {
+            const found = Array.isArray(data)
+                ? data.find((c) => String(c.id) === String(childId))
+                : null;
+            if (!found) router.push('/be-a-donor');
+            else setChild(found);
+        };
+
+        const cached = sessionStorage.getItem(CHILDREN_CACHE_KEY);
+        if (cached) {
+            try {
+                pickChild(JSON.parse(cached));
+                setChildLoading(false);
+            } catch (_) {}
+        }
+
         fetch('/api/children')
             .then((r) => r.json())
             .then((data) => {
-                const found = Array.isArray(data)
-                    ? data.find((c) => String(c.id) === String(childId))
-                    : null;
-                if (!found) router.push('/be-a-donor');
-                else setChild(found);
+                sessionStorage.setItem(CHILDREN_CACHE_KEY, JSON.stringify(Array.isArray(data) ? data : []));
+                pickChild(data);
             })
             .catch(() => router.push('/be-a-donor'))
             .finally(() => setChildLoading(false));

@@ -15,7 +15,13 @@ export async function POST(req) {
         if (!child.id) child.id = Date.now().toString();
         if (!child.createdAt) child.createdAt = new Date().toISOString();
         children.push(child);
-        await saveChildren(children);
+        const ok = await saveChildren(children);
+        if (!ok) {
+            return new Response(JSON.stringify({ error: 'Failed to save child to database' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
         return new Response(JSON.stringify({ success: true, child }), {
             status: 201,
             headers: { 'Content-Type': 'application/json' },
@@ -40,7 +46,13 @@ export async function PUT(req) {
             });
         }
         children[idx] = { ...children[idx], ...updated };
-        await saveChildren(children);
+        const ok = await saveChildren(children);
+        if (!ok) {
+            return new Response(JSON.stringify({ error: 'Failed to update child in database' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
         return new Response(JSON.stringify({ success: true, child: children[idx] }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -72,8 +84,20 @@ export async function DELETE(req) {
                 headers: { 'Content-Type': 'application/json' },
             });
         }
-        await deleteRow('children.json', childId);
-        await saveChildren(filtered);
+        const deleted = await deleteRow('children.json', childId);
+        if (!deleted) {
+            return new Response(JSON.stringify({ error: 'Failed to delete child from database' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+        const ok = await saveChildren(filtered);
+        if (!ok) {
+            return new Response(JSON.stringify({ error: 'Failed to sync child list in database' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
         return new Response(JSON.stringify({ success: true }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },

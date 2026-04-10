@@ -40,6 +40,7 @@ export default function AdminProductsPage() {
     // Delete confirmation
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => { fetchProducts(); }, []);
 
@@ -101,7 +102,12 @@ export default function AdminProductsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(processed),
             });
-            if (res.ok) { closeAdd(); fetchProducts(); }
+            if (res.ok) {
+                closeAdd();
+                fetchProducts();
+                setSuccessMessage('Product added successfully.');
+                setTimeout(() => setSuccessMessage(''), 2500);
+            }
         } catch (err) { console.error('Add error:', err); }
     };
 
@@ -156,7 +162,12 @@ export default function AdminProductsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(processed),
             });
-            if (res.ok) { closeEdit(); fetchProducts(); }
+            if (res.ok) {
+                closeEdit();
+                fetchProducts();
+                setSuccessMessage('Product updated successfully.');
+                setTimeout(() => setSuccessMessage(''), 2500);
+            }
         } catch (err) { console.error('Edit error:', err); }
     };
 
@@ -185,6 +196,8 @@ export default function AdminProductsPage() {
             if (res.ok) {
                 setDeleteTarget(null);
                 fetchProducts();
+                setSuccessMessage('Product deleted successfully.');
+                setTimeout(() => setSuccessMessage(''), 2500);
             } else {
                 const errData = await res.json().catch(() => ({}));
                 console.error('Delete error:', errData?.error || res.statusText);
@@ -300,6 +313,11 @@ export default function AdminProductsPage() {
 
     return (
         <div className="space-y-6">
+            {successMessage && (
+                <div className="fixed top-4 right-4 z-50 bg-green-600 text-white px-4 py-2.5 rounded-lg shadow-lg text-sm font-semibold">
+                    {successMessage}
+                </div>
+            )}
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
                 <div className="min-w-0">
