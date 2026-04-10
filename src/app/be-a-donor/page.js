@@ -13,7 +13,7 @@ export default function BeADonorPage() {
   const [search, setSearch] = useState('');
 
   useEffect(() => {
-    fetch('/api/children', { cache: 'no-store' })
+    fetch('/api/children')
       .then((r) => r.json())
       .then((data) => setChildren(Array.isArray(data) ? data : []))
       .catch(() => setChildren([]))
@@ -85,6 +85,8 @@ export default function BeADonorPage() {
                           src={child.image}
                           alt={child.name}
                           className="w-full h-64 sm:h-80 object-cover"
+                          loading="lazy"
+                          decoding="async"
                           onError={(e) => e.target.src = '/Girly.png'}
                         />
                       </div>

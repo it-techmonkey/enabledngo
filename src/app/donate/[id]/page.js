@@ -35,7 +35,7 @@ export default function DonatePage() {
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
-        fetch('/api/children', { cache: 'no-store' })
+        fetch('/api/children')
             .then((r) => r.json())
             .then((data) => {
                 const found = Array.isArray(data)
@@ -189,7 +189,13 @@ export default function DonatePage() {
                         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
                             <div className="flex flex-col sm:flex-row">
                                 <div className="sm:w-48 w-full flex-shrink-0">
-                                    <img src={child.image} alt={child.name} className="w-full h-48 sm:h-full object-cover" />
+                                    <img
+                                        src={child.image}
+                                        alt={child.name}
+                                        className="w-full h-48 sm:h-full object-cover"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
                                 </div>
                                 <div className="flex-1 p-4 sm:p-6">
                                     <h2 className="text-2xl font-bold text-gray-900 mb-2">{child.name}</h2>

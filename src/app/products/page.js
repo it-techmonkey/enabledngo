@@ -24,7 +24,7 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch('/api/products', { cache: 'no-store' });
+        const res = await fetch('/api/products');
         if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
         const data = await res.json();
         // Handle both array and { products: [] } shaped responses
@@ -194,6 +194,8 @@ export default function ProductsPage() {
                             src={product.image || product.imageUrl || '/Girly.png'}
                             alt={product.name || product.title || 'Product'}
                             className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                            loading="lazy"
+                            decoding="async"
                             onError={(e) => { e.target.src = '/Girly.png'; }}
                           />
                           {isNew && (

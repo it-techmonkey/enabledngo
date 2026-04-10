@@ -12,6 +12,7 @@ const getFilePath = (filename) => path.join(DATA_DIR, filename);
 const memoryCache = new Map();
 const cacheTimestamps = new Map();
 const pendingReads = new Map(); // request coalescing: one in-flight read per key
+const SUPABASE_TIMEOUT_MS = 4000;
 
 function getCached(key) {
     const ts = cacheTimestamps.get(key);
@@ -45,6 +46,15 @@ function invalidateCached(filename) {
     pendingReads.delete(filename);
 }
 
+async function withTimeout(promise, timeoutMs = SUPABASE_TIMEOUT_MS) {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Timeout')), timeoutMs);
+        })
+    ]);
+}
+
 /** Delete a single row by id from Supabase (and invalidate cache). Use before saving filtered array so DB stays in sync. */
 export async function deleteRow(filename, id) {
     invalidateCached(filename);
@@ -52,7 +62,7 @@ export async function deleteRow(filename, id) {
         const table = TABLE_MAP[filename];
         if (table && id != null) {
             try {
-                const { error } = await supabase.from(table).delete().eq('id', String(id));
+                const { error } = await withTimeout(supabase.from(table).delete().eq('id', String(id)));
                 if (error) throw error;
             } catch (err) {
                 console.error(`Supabase delete error for ${table}:`, err);
@@ -176,7 +186,7 @@ async function doReadData(filename) {
         const table = TABLE_MAP[filename];
         if (table) {
             try {
-                const { data, error } = await supabase.from(table).select('*');
+                const { data, error } = await withTimeout(supabase.from(table).select('*'));
                 if (error) throw error;
                 let result = FIELD_MAPPINGS[table] ? (data || []).map(FIELD_MAPPINGS[table].from) : (data || []);
                 // If children table is empty, use local file so be-a-donor and admin show same seeded data
@@ -248,7 +258,7 @@ export async function writeData(filename, data) {
                     mappedData = mappedData.map(FIELD_MAPPINGS[table].to);
                 }
 
-                const { error } = await supabase.from(table).upsert(mappedData);
+                const { error } = await withTimeout(supabase.from(table).upsert(mappedData));
                 if (error) throw error;
                 // Keep local file in sync so both admin and website see same data and local fallback works
                 try {
@@ -298,7 +308,7 @@ export async function insertUser(user) {
     invalidateCached('users.json');
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         try {
-            const { error } = await supabase.from('users').insert(user);
+            const { error } = await withTimeout(supabase.from('users').insert(user));
             if (error) throw error;
             return true;
         } catch (err) {
@@ -329,7 +339,7 @@ export async function deleteUserById(userId) {
     invalidateCached('users.json');
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         try {
-            const { error } = await supabase.from('users').delete().eq('id', userId);
+            const { error } = await withTimeout(supabase.from('users').delete().eq('id', userId));
             if (error) throw error;
             return true;
         } catch (err) {
@@ -348,4 +358,25 @@ export async function deleteUserById(userId) {
         console.error('Error updating users.json:', err);
         return false;
     }
+}
+
+/** Fetch one user by email without loading entire users table. */
+export async function getUserByEmail(email) {
+    const emailLower = (email || '').trim().toLowerCase();
+    if (!emailLower) return null;
+
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        try {
+            const { data, error } = await withTimeout(
+                supabase.from('users').select('*').eq('email', emailLower).limit(1).maybeSingle()
+            );
+            if (error) throw error;
+            return data || null;
+        } catch (err) {
+            console.error('Supabase get user by email error:', err);
+        }
+    }
+
+    const users = await readData('users.json');
+    return users.find((u) => (u.email || '').trim().toLowerCase() === emailLower) || null;
 }

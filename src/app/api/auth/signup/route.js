@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUsers, insertUser } from '@/lib/db';
+import { getUserByEmail, insertUser } from '@/lib/db';
 
 function invalidateAuthUsersCache() {
     globalThis.__authUsersCache = null;
@@ -11,8 +11,8 @@ export async function POST(request) {
         const { name, email, password } = await request.json();
         const emailLower = (email || '').trim().toLowerCase();
 
-        const users = await getUsers();
-        if (users.find(u => (u.email || '').trim().toLowerCase() === emailLower)) {
+        const existing = await getUserByEmail(emailLower);
+        if (existing) {
             return NextResponse.json({ success: false, message: 'Email already in use' }, { status: 400 });
         }
 

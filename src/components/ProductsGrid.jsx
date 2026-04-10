@@ -26,12 +26,12 @@ export default function ProductsGrid() {
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
                     <div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tight">Available Products</h2>
-                        <p className="text-gray-500 font-medium mt-1">Support our mission by shopping our Impact Shop</p>
+                        <h2 className="text-3xl font-semibold text-gray-900 tracking-tight">Available Products</h2>
+                        <p className="text-gray-500 mt-1">Support our mission by shopping our Impact Shop</p>
                     </div>
                     <Link
                         href="/products"
-                        className="bg-[#f0312f] text-white px-8 py-3 rounded-2xl hover:bg-red-700 transition-all font-bold shadow-lg shadow-red-100 active:scale-95 text-sm"
+                        className="bg-[#f0312f] text-white px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors font-semibold text-sm"
                     >
                         View Impact Shop
                     </Link>
@@ -54,18 +54,18 @@ export default function ProductsGrid() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         {products.map((product) => (
-                            <div
+                            <Link
                                 key={product.id}
-                                className="group bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 cursor-pointer"
-                                onClick={() => {
-                                    window.location.href = '/products';
-                                }}
+                                href="/products"
+                                className="group bg-white rounded-xl overflow-hidden border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-md transition-all duration-300"
                             >
                                 <div className="aspect-[4/3] bg-gray-50 p-6 overflow-hidden relative">
                                     <img
                                         src={product.image || '/Girly.png'}
                                         alt={product.name}
                                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                                        loading="lazy"
+                                        decoding="async"
                                         onError={(e) => e.target.src = '/Girly.png'}
                                     />
                                     {product.status === 'Available' && (
@@ -78,7 +78,7 @@ export default function ProductsGrid() {
                                 </div>
                                 <div className="p-6">
                                     <div className="flex justify-between items-start gap-2 mb-1">
-                                        <h3 className="font-bold text-gray-900 group-hover:text-[#f0312f] transition-colors truncate">
+                                        <h3 className="font-semibold text-gray-900 group-hover:text-[#f0312f] transition-colors truncate">
                                             {product.name}
                                         </h3>
                                         {product.category && (
@@ -87,15 +87,15 @@ export default function ProductsGrid() {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-[#f0312f] font-black text-lg">
+                                    <p className="text-[#f0312f] font-semibold text-lg">
                                         Rp {Number(product.price).toLocaleString('id-ID')}
                                     </p>
-                                    <p className="text-[10px] text-gray-400 font-bold mt-2 uppercase tracking-widest flex items-center gap-0.5">
+                                    <p className="text-[10px] text-gray-500 font-semibold mt-2 uppercase tracking-widest flex items-center gap-0.5">
                                         Details
                                         <ChevronRight className="w-3 h-3 shrink-0" aria-hidden />
                                     </p>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Pencil, Trash2, X, ImagePlus } from 'lucide-react';
+import { Pencil, Trash2, X, ImagePlus, Search, RefreshCw } from 'lucide-react';
 
 const EMPTY_PRODUCT = {
     name: '',
@@ -15,11 +15,14 @@ const EMPTY_PRODUCT = {
     inStock: true,
 };
 
-const inputCls = 'w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f] transition-all font-medium';
+const inputCls = 'w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f] transition-all font-medium';
 
 export default function AdminProductsPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
 
     // Add modal
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -40,8 +43,9 @@ export default function AdminProductsPage() {
 
     useEffect(() => { fetchProducts(); }, []);
 
-    const fetchProducts = async () => {
-        setLoading(true);
+    const fetchProducts = async (isRefresh = false) => {
+        if (isRefresh) setRefreshing(true);
+        else setLoading(true);
         try {
             const res = await fetch('/api/admin/products', { cache: 'no-store' });
             const data = await res.json();
@@ -50,6 +54,7 @@ export default function AdminProductsPage() {
             console.error('Fetch error:', err);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
@@ -281,54 +286,95 @@ export default function AdminProductsPage() {
         </>
     );
 
+    const filteredProducts = products.filter((product) => {
+        const q = search.trim().toLowerCase();
+        const productStatus = product.status === 'Available' ? 'available' : 'out';
+        const searchOk = !q || [
+            product.name,
+            product.category,
+            product.description,
+        ].filter(Boolean).some((v) => String(v).toLowerCase().includes(q));
+        const statusOk = statusFilter === 'all' || statusFilter === productStatus;
+        return searchOk && statusOk;
+    });
+
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div>
-                    <h2 className="text-2xl font-black text-gray-800 tracking-tight">Manage Products</h2>
-                    <p className="text-gray-400 font-medium text-sm mt-1">Total {products.length} products listed</p>
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <div className="min-w-0">
+                    <h2 className="text-2xl font-semibold text-gray-800 tracking-tight">Manage Products</h2>
+                    <p className="text-gray-500 text-sm mt-1">{filteredProducts.length} of {products.length} products</p>
                 </div>
-                <button onClick={() => setIsAddOpen(true)} className="bg-[#f0312f] text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-all font-bold shadow-lg shadow-red-100 active:scale-95">
-                    + Add New Product
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                    <div className="relative sm:w-72">
+                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search products..."
+                            className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f]"
+                        />
+                    </div>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f]"
+                    >
+                        <option value="all">All status</option>
+                        <option value="available">Available</option>
+                        <option value="out">Out of Stock</option>
+                    </select>
+                    <button
+                        onClick={() => fetchProducts(true)}
+                        disabled={refreshing}
+                        className="px-3 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                        title="Refresh list"
+                    >
+                        <RefreshCw className={`w-4 h-4 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} aria-hidden />
+                    </button>
+                    <button onClick={() => setIsAddOpen(true)} className="bg-[#f0312f] text-white px-5 py-2.5 rounded-lg hover:bg-red-700 transition-colors font-semibold whitespace-nowrap">
+                        + Add New Product
+                    </button>
+                </div>
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-100">
+                        <thead className="bg-gray-50/80 border-b border-gray-200">
                             <tr>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Product</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Category</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Price</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Qty</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Actions</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Product</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Category</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Price</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Qty</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {loading ? (
                                 <tr><td colSpan="6" className="px-6 py-10 text-center text-gray-400 font-medium">Loading products...</td></tr>
-                            ) : products.length === 0 ? (
+                            ) : filteredProducts.length === 0 ? (
                                 <tr><td colSpan="6" className="px-6 py-10 text-center text-gray-400 font-medium">No products found.</td></tr>
-                            ) : products.map((product) => (
+                            ) : filteredProducts.map((product) => (
                                 <tr key={product.id || product._id || product.name} className="hover:bg-gray-50 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shrink-0">
                                                 <img src={product.image} alt="" className="w-full h-full object-contain" onError={(e) => e.target.src = '/Girly.png'} />
                                             </div>
-                                            <div>
-                                                <p className="font-bold text-gray-800">{product.name}</p>
-                                                <p className="text-xs text-gray-400 font-medium truncate max-w-[200px]">{product.description}</p>
+                                            <div className="min-w-0">
+                                                <p className="font-semibold text-gray-800 truncate max-w-[280px]">{product.name}</p>
+                                                <p className="text-xs text-gray-500 truncate max-w-[280px]">{product.description}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm font-bold text-gray-600">{product.category}</td>
-                                    <td className="px-6 py-4 text-sm font-black text-gray-900">Rp {Number(product.price).toLocaleString('id-ID')}</td>
-                                    <td className="px-6 py-4 text-sm font-bold text-gray-700">{product.quantity ?? '—'}</td>
+                                    <td className="px-6 py-4 text-sm font-medium text-gray-700">{product.category}</td>
+                                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">Rp {Number(product.price).toLocaleString('id-ID')}</td>
+                                    <td className="px-6 py-4 text-sm font-medium text-gray-700">{product.quantity ?? '—'}</td>
                                     <td className="px-6 py-4">
                                         <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full ${product.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                             {product.status}

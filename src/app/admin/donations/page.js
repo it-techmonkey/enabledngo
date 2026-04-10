@@ -49,6 +49,8 @@ export default function AdminDonorRegistrationsPage() {
         );
     });
 
+    const totalAmount = filtered.reduce((sum, d) => sum + Number(d.amount || 0), 0);
+
     const formatDate = (iso) => {
         if (!iso) return '—';
         try {
@@ -70,10 +72,10 @@ export default function AdminDonorRegistrationsPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-black text-gray-800 tracking-tight">Donor Registrations</h2>
-                    <p className="text-gray-400 font-medium text-sm mt-1">
+                    <h2 className="text-2xl font-semibold text-gray-800 tracking-tight">Donor Registrations</h2>
+                    <p className="text-gray-500 text-sm mt-1">
                         {loading ? 'Loading...' : `${donations.length} donation${donations.length !== 1 ? 's' : ''} submitted from the website`}
                     </p>
                 </div>
@@ -84,13 +86,13 @@ export default function AdminDonorRegistrationsPage() {
                             placeholder="Search by donor, child, email..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-4 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f] transition-all"
+                            className="w-full pl-4 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f] transition-all"
                         />
                     </div>
                     <button
                         onClick={() => fetchDonations(true)}
                         disabled={refreshing}
-                        className="p-2.5 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        className="p-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                         title="Refresh"
                     >
                         <RefreshCw className={`w-4 h-4 text-gray-500 ${refreshing ? 'animate-spin' : ''}`} />
@@ -98,13 +100,30 @@ export default function AdminDonorRegistrationsPage() {
                 </div>
             </div>
 
+            {!loading && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <p className="text-xs uppercase tracking-wide text-gray-500">Shown</p>
+                        <p className="text-xl font-semibold text-gray-900 mt-1">{filtered.length}</p>
+                    </div>
+                    <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <p className="text-xs uppercase tracking-wide text-gray-500">Total Monthly Amount</p>
+                        <p className="text-xl font-semibold text-gray-900 mt-1">{formatRupiah(totalAmount)}</p>
+                    </div>
+                    <div className="bg-white rounded-lg border border-gray-200 p-4">
+                        <p className="text-xs uppercase tracking-wide text-gray-500">Unique Donors</p>
+                        <p className="text-xl font-semibold text-gray-900 mt-1">{new Set(filtered.map((d) => d.email || d.name)).size}</p>
+                    </div>
+                </div>
+            )}
+
             {/* Content */}
             {loading ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 py-20 text-center text-gray-400 font-medium">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] py-20 text-center text-gray-500 font-medium">
                     Loading donations...
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 py-20 text-center">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] py-20 text-center">
                     <Users className="w-12 h-12 text-gray-200 mx-auto mb-3" />
                     <p className="text-gray-400 font-medium">
                         {search
@@ -115,7 +134,7 @@ export default function AdminDonorRegistrationsPage() {
             ) : (
                 <div className="space-y-4">
                     {filtered.map((d) => (
-                        <div key={d.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                        <div key={d.id} className="bg-white rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden hover:shadow-md transition-shadow">
                             <div className="flex flex-col md:flex-row">
 
                                 {/* Child panel */}

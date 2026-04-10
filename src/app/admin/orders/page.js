@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Package, User, MapPin } from 'lucide-react';
+import { ChevronDown, ChevronRight, Package, User, MapPin, RefreshCw, Search } from 'lucide-react';
 
 function formatOrderDate(val) {
     if (!val) return '—';
@@ -26,12 +26,15 @@ export default function AdminOrdersPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
+    const [search, setSearch] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         fetchOrders();
     }, []);
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (isRefresh = false) => {
+        if (isRefresh) setRefreshing(true);
         try {
             const res = await fetch('/api/admin/orders', { cache: 'no-store' });
             const data = await res.json();
@@ -40,31 +43,68 @@ export default function AdminOrdersPage() {
             console.error('Fetch error:', error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
     const normalized = orders
         .map(normalizeOrder)
+        .filter((o) => {
+            const q = search.trim().toLowerCase();
+            if (!q) return true;
+            return (
+                String(o.id).toLowerCase().includes(q) ||
+                String(o.customer).toLowerCase().includes(q) ||
+                String(o.email).toLowerCase().includes(q)
+            );
+        })
         .sort((a, b) => (new Date(b.date) || 0) - (new Date(a.date) || 0));
 
     return (
         <div className="space-y-6">
-            <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h2 className="text-xl sm:text-2xl font-black text-gray-800 tracking-tight">Orders Overview</h2>
-                <p className="text-gray-400 font-medium text-sm mt-1">Manage and track customer purchases</p>
+            <div className="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                    <div>
+                        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 tracking-tight">Orders Overview</h2>
+                        <p className="text-gray-500 text-sm mt-1">
+                            {loading ? 'Loading orders...' : `${normalized.length} order${normalized.length !== 1 ? 's' : ''} shown`}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2 w-full lg:w-auto">
+                        <div className="relative w-full lg:w-72">
+                            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search order, customer, email..."
+                                className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f]"
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => fetchOrders(true)}
+                            disabled={refreshing}
+                            className="min-h-[40px] min-w-[40px] p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                            title="Refresh orders"
+                        >
+                            <RefreshCw className={`w-4 h-4 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} aria-hidden />
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left min-w-[640px]">
-                        <thead className="bg-gray-50 border-b border-gray-100">
+                        <thead className="bg-gray-50/80 border-b border-gray-200">
                             <tr>
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-black text-gray-400 uppercase tracking-widest w-8"></th>
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Order ID</th>
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Customer</th>
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Date</th>
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Total</th>
-                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest w-8"></th>
+                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Order ID</th>
+                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Customer</th>
+                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Date</th>
+                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Total</th>
+                                <th className="px-3 sm:px-6 py-3 sm:py-4 text-xs font-semibold text-gray-500 uppercase tracking-widest">Status</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -81,13 +121,13 @@ export default function AdminOrdersPage() {
                                         <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-400">
                                             {expandedId === order.id ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                                         </td>
-                                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm font-bold text-[#f0312f]">#{String(order.id)}</td>
+                                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm font-semibold text-[#f0312f]">#{String(order.id)}</td>
                                         <td className="px-3 sm:px-6 py-3 sm:py-4">
-                                            <p className="font-bold text-gray-800">{order.customer}</p>
+                                            <p className="font-semibold text-gray-800">{order.customer}</p>
                                             <p className="text-xs text-gray-400 font-medium truncate max-w-[180px] sm:max-w-none">{order.email}</p>
                                         </td>
                                         <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{formatOrderDate(order.date)}</td>
-                                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm font-black text-gray-900">Rp {Number(order.total).toLocaleString('id-ID')}</td>
+                                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-sm font-semibold text-gray-900">Rp {Number(order.total).toLocaleString('id-ID')}</td>
                                         <td className="px-3 sm:px-6 py-3 sm:py-4">
                                             <span className="text-[10px] font-black uppercase tracking-widest bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
                                                 {order.status}

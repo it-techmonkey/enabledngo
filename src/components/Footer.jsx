@@ -23,40 +23,40 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/online-support-group" className="underline hover:text-gray-200 transition-colors">
+                                <Link href="/online-support-group" className="underline hover:text-gray-200 transition-colors py-1 inline-flex items-center min-h-[44px]">
                                     Online Support Group
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/online-webinar-sessions" className="underline hover:text-gray-200 transition-colors">
+                                <Link href="/online-webinar-sessions" className="underline hover:text-gray-200 transition-colors py-1 inline-flex items-center min-h-[44px]">
                                     Online Webinar Sessions
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/patient-consultation-support" className="underline hover:text-gray-200 transition-colors">
+                                <Link href="/patient-consultation-support" className="underline hover:text-gray-200 transition-colors py-1 inline-flex items-center min-h-[44px]">
                                     Patient Consultation Support
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/patient-journey-documentary" className="underline hover:text-gray-200 transition-colors">
+                                <Link href="/patient-journey-documentary" className="underline hover:text-gray-200 transition-colors py-1 inline-flex items-center min-h-[44px]">
                                     Patient Journey Documentary
                                 </Link>
                             </li>
                         </ul>
                         <ul className="space-y-2">
                             <li>
-                                <Link href="/pediatric-tracheostomy-care-booklet" className="underline hover:text-gray-200 transition-colors">
+                                <Link href="/pediatric-tracheostomy-care-booklet" className="underline hover:text-gray-200 transition-colors py-1 inline-flex items-center min-h-[44px]">
                                     Pediatric Tracheostomy Care Booklet
                                 </Link>
                             </li>
 
                             <li>
-                                <Link href="/pro-bono-consulting-project" className="underline hover:text-gray-200 transition-colors">
+                                <Link href="/pro-bono-consulting-project" className="underline hover:text-gray-200 transition-colors py-1 inline-flex items-center min-h-[44px]">
                                     Pro Bono Consulting Project
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/research" className="underline hover:text-gray-200 transition-colors">
+                                <Link href="/research" className="underline hover:text-gray-200 transition-colors py-1 inline-flex items-center min-h-[44px]">
                                     Research
                                 </Link>
                             </li>

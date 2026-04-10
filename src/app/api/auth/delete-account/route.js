@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getUsers, deleteUserById } from '@/lib/db';
+import { getUserByEmail, deleteUserById } from '@/lib/db';
 
 function invalidateAuthUsersCache() {
     globalThis.__authUsersCache = null;
@@ -13,12 +13,8 @@ export async function POST(request) {
             return NextResponse.json({ success: false, message: 'Email and password required' }, { status: 400 });
         }
 
-        const users = await getUsers();
-        const emailLower = (email || '').trim().toLowerCase();
-        const user = users.find(
-            (u) => (u.email || '').trim().toLowerCase() === emailLower && u.password === password
-        );
-        if (!user) {
+        const user = await getUserByEmail(email);
+        if (!user || user.password !== password) {
             return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
         }
 

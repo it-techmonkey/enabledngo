@@ -1,17 +1,19 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Pencil, Trash2, X, ImagePlus, Users } from 'lucide-react';
+import { Pencil, Trash2, X, ImagePlus, Users, Search, RefreshCw } from 'lucide-react';
 
 const EMPTY = {
     name: '', age: '', domicile: '', parentsOccupation: '', description: '', image: '',
 };
 
-const inputCls = 'w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f] transition-all font-medium';
+const inputCls = 'w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f] transition-all font-medium';
 
 export default function AdminChildrenPage() {
     const [children, setChildren] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [search, setSearch] = useState('');
 
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [form, setForm] = useState(EMPTY);
@@ -27,14 +29,15 @@ export default function AdminChildrenPage() {
 
     useEffect(() => { fetchChildren(); }, []);
 
-    const fetchChildren = async () => {
-        setLoading(true);
+    const fetchChildren = async (isRefresh = false) => {
+        if (isRefresh) setRefreshing(true);
+        else setLoading(true);
         try {
             const res = await fetch('/api/admin/children', { cache: 'no-store' });
             const data = await res.json();
             setChildren(Array.isArray(data) ? data : []);
         } catch (err) { console.error(err); }
-        finally { setLoading(false); }
+        finally { setLoading(false); setRefreshing(false); }
     };
 
     const toBase64 = (file) => new Promise((resolve) => {
@@ -173,31 +176,62 @@ export default function AdminChildrenPage() {
         </>
     );
 
+    const filteredChildren = children.filter((child) => {
+        const q = search.trim().toLowerCase();
+        if (!q) return true;
+        return [
+            child.name,
+            child.domicile,
+            child.parentsOccupation,
+            child.description,
+        ].filter(Boolean).some((v) => String(v).toLowerCase().includes(q));
+    });
+
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div>
-                    <h2 className="text-2xl font-black text-gray-800 tracking-tight">Children Who Need Support</h2>
-                    <p className="text-gray-400 font-medium text-sm mt-1">{children.length} child{children.length !== 1 ? 'ren' : ''} listed on the Be a Donor page</p>
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <div className="min-w-0">
+                    <h2 className="text-2xl font-semibold text-gray-800 tracking-tight">Children Who Need Support</h2>
+                    <p className="text-gray-500 text-sm mt-1">{filteredChildren.length} of {children.length} child{children.length !== 1 ? 'ren' : ''} listed</p>
                 </div>
-                <button onClick={() => setIsAddOpen(true)} className="bg-[#f0312f] text-white px-6 py-3 rounded-xl hover:bg-red-700 transition-all font-bold shadow-lg shadow-red-100 active:scale-95">
-                    + Add Child
-                </button>
+                <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+                    <div className="relative sm:w-72">
+                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search child..."
+                            className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-[#f0312f]"
+                        />
+                    </div>
+                    <button
+                        onClick={() => fetchChildren(true)}
+                        disabled={refreshing}
+                        className="px-3 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                        title="Refresh list"
+                    >
+                        <RefreshCw className={`w-4 h-4 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} aria-hidden />
+                    </button>
+                    <button onClick={() => setIsAddOpen(true)} className="bg-[#f0312f] text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold whitespace-nowrap">
+                        + Add Child
+                    </button>
+                </div>
             </div>
 
             {/* Grid */}
             {loading ? (
-                <div className="bg-white rounded-2xl p-20 text-center text-gray-400 font-medium shadow-sm border border-gray-100">Loading...</div>
-            ) : children.length === 0 ? (
-                <div className="bg-white rounded-2xl p-20 text-center shadow-sm border border-gray-100">
+                <div className="bg-white rounded-xl p-20 text-center text-gray-500 font-medium border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">Loading...</div>
+            ) : filteredChildren.length === 0 ? (
+                <div className="bg-white rounded-xl p-20 text-center border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
                     <Users className="w-12 h-12 text-gray-200 mx-auto mb-3" />
                     <p className="text-gray-400 font-medium">No children added yet. Add a child to list them on the Be a Donor page.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {children.map((child) => (
-                        <div key={child.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+                    {filteredChildren.map((child) => (
+                        <div key={child.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow flex flex-col">
                             <div className="h-48 bg-gray-50 overflow-hidden">
                                 {child.image ? (
                                     <img src={child.image} alt={child.name} className="w-full h-full object-cover" onError={(e) => e.target.style.display='none'} />

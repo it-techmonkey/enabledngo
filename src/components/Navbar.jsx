@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
@@ -17,6 +17,31 @@ export default function Navbar() {
     const handleNavbarToggle = () => {
         setIsOpen(!isOpen);
     };
+
+    useEffect(() => {
+        // Prevent background scroll when mobile menu is open.
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [isOpen]);
+
+    useEffect(() => {
+        // Auto-close menu when route changes.
+        setIsOpen(false);
+    }, [pathname]);
+
+    useEffect(() => {
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') setIsOpen(false);
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, []);
 
     const handleAboutUsClick = () => {
         setIsOpen(false);
@@ -35,9 +60,9 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="w-full bg-[#F0312F] text-white font-inter shadow-md relative z-50">
+        <nav className="w-full bg-[#F0312F] text-white font-inter shadow-sm relative z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-20 py-4 flex justify-between items-center">
-                <Link href="/" className="text-xl font-bold">
+                <Link href="/" className="text-xl font-semibold tracking-tight">
                     Enabled.
                 </Link>
                 <div className="hidden md:flex gap-5 items-center">
@@ -59,25 +84,31 @@ export default function Navbar() {
                     </Link>
                     {user ? (
                         <div className="flex items-center gap-4">
-                            <Link href="/profile" className="flex items-center gap-2 bg-white text-[#F0312F] px-4 py-2 rounded font-bold transition-all duration-300 hover:-translate-y-1 hover:shadow-lg min-h-[44px] items-center">
+                            <Link href="/profile" className="flex items-center gap-2 bg-white text-[#F0312F] px-4 py-2 rounded-lg font-semibold transition-colors hover:bg-gray-100 min-h-[44px] items-center">
                                 <User className="w-4 h-4 shrink-0" aria-hidden />
                                 {user.name}
                             </Link>
                             <button onClick={logout} className="text-white hover:underline transition-all">Logout</button>
                         </div>
                     ) : (
-                        <button className="bg-white text-[#F0312F] px-4 py-2 rounded hover:bg-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg" onClick={handleSignupLogin}>
+                        <button className="bg-white text-[#F0312F] px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors font-semibold" onClick={handleSignupLogin}>
                             Signup / Login
                         </button>
                     )}
                 </div>
-                <button className="md:hidden p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center" onClick={handleNavbarToggle} aria-label="Open menu">
+                <button
+                    className="md:hidden p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    onClick={handleNavbarToggle}
+                    aria-label={isOpen ? 'Close menu' : 'Open menu'}
+                    aria-expanded={isOpen}
+                    aria-controls="mobile-nav-menu"
+                >
                     <Menu className="w-6 h-6" aria-hidden />
                 </button>
             </div>
             {/* Mobile Menu */}
             {isOpen && (
-                <div className="md:hidden bg-[#F0312F] px-4 pt-2 pb-4 space-y-1 shadow-lg absolute w-full left-0">
+                <div id="mobile-nav-menu" className="md:hidden bg-[#F0312F] px-4 pt-2 pb-4 space-y-1 shadow-lg absolute w-full left-0">
                     <button className="block w-full text-left px-3 py-3 rounded-md font-medium hover:bg-red-700 flex items-center gap-2 min-h-[44px] items-center" onClick={() => { handleAboutUsClick(); setIsOpen(false); }}>
                         <Info className="w-4 h-4 shrink-0" aria-hidden /> About Us
                     </button>
@@ -100,12 +131,12 @@ export default function Navbar() {
                                 <User className="w-4 h-4 shrink-0" aria-hidden />
                                 Profile
                             </Link>
-                            <button className="block w-full mt-2 bg-white text-[#F0312F] px-4 py-2 rounded hover:bg-gray-100 transition-all duration-300 text-center font-bold" onClick={() => { setIsOpen(false); logout(); }}>
+                            <button className="block w-full mt-2 bg-white text-[#F0312F] px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-center font-semibold" onClick={() => { setIsOpen(false); logout(); }}>
                                 Logout
                             </button>
                         </>
                     ) : (
-                        <button className="block w-full mt-2 bg-white text-[#F0312F] px-4 py-2 rounded hover:bg-gray-100 transition-all duration-300 text-center font-bold hover:-translate-y-1 hover:shadow-lg" onClick={() => { setIsOpen(false); handleSignupLogin(); }}>
+                        <button className="block w-full mt-2 bg-white text-[#F0312F] px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-center font-semibold" onClick={() => { setIsOpen(false); handleSignupLogin(); }}>
                             Signup / Login
                         </button>
                     )}

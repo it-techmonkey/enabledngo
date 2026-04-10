@@ -1,6 +1,21 @@
 -- Run this in Supabase SQL Editor to sync admin panel and website with the database.
 -- Creates tables if missing and adds any required columns.
 
+-- USERS
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    name TEXT,
+    email TEXT,
+    password TEXT,
+    role TEXT,
+    createdat TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS createdat TIMESTAMPTZ DEFAULT NOW();
+
 -- PRODUCTS (admin panel + Impact Shop website)
 CREATE TABLE IF NOT EXISTS products (
     id TEXT PRIMARY KEY,
@@ -48,6 +63,18 @@ ALTER TABLE orders ADD COLUMN IF NOT EXISTS address JSONB;
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS products JSONB;
 
 -- DONATIONS
+CREATE TABLE IF NOT EXISTS donations (
+    id TEXT PRIMARY KEY,
+    donor_name TEXT,
+    title TEXT,
+    recipient TEXT,
+    amount NUMERIC,
+    program TEXT,
+    status TEXT DEFAULT 'Success',
+    date TEXT,
+    image TEXT,
+    description TEXT
+);
 ALTER TABLE donations ADD COLUMN IF NOT EXISTS title TEXT;
 ALTER TABLE donations ADD COLUMN IF NOT EXISTS donor_name TEXT;
 ALTER TABLE donations ADD COLUMN IF NOT EXISTS recipient TEXT;

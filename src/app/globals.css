@@ -3,6 +3,21 @@
 
 /* Mobile: keep keyboard open while typing (prevent focus loss after first character) */
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid #f0312f;
+    outline-offset: 2px;
+  }
+
   input,
   textarea {
     font-size: 16px; /* Prevents iOS zoom on focus which can cause keyboard to dismiss */

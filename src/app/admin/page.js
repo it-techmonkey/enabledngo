@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShoppingBag, Heart, Package, Plus, FileText } from 'lucide-react';
+import { ShoppingBag, Heart, Package, Plus, FileText, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 function isThisMonth(dateStr) {
@@ -34,15 +34,23 @@ export default function AdminDashboard() {
     const [counts, setCounts] = useState({ products: null, donations: null, orders: null });
     const [trends, setTrends] = useState({ products: null, donations: null, orders: null });
     const [loading, setLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [error, setError] = useState('');
 
     const fetchAll = async (showLoading = true) => {
         try {
+            setError('');
             if (showLoading) setLoading(true);
+            else setIsRefreshing(true);
             const [productsRes, donationsRes, ordersRes] = await Promise.all([
                 fetch('/api/admin/products', { cache: 'no-store' }),
                 fetch('/api/donor-registrations', { cache: 'no-store' }),
                 fetch('/api/admin/orders', { cache: 'no-store' }),
             ]);
+
+            if (!productsRes.ok || !donationsRes.ok || !ordersRes.ok) {
+                throw new Error('Failed to load dashboard data');
+            }
 
             const [products, donations, orders] = await Promise.all([
                 productsRes.json(),
@@ -70,8 +78,10 @@ export default function AdminDashboard() {
             });
         } catch (err) {
             console.error('Dashboard fetch error:', err);
+            setError('Unable to refresh dashboard right now. Please try again.');
         } finally {
             setLoading(false);
+            setIsRefreshing(false);
         }
     };
 
@@ -91,48 +101,66 @@ export default function AdminDashboard() {
             value: counts.products,
             trend: trends.products,
             Icon: ShoppingBag,
-            color: 'bg-blue-500',
+            color: 'text-blue-600 bg-blue-50',
         },
         {
             label: 'Donor Registrations',
             value: counts.donations,
             trend: trends.donations,
             Icon: Heart,
-            color: 'bg-red-500',
+            color: 'text-red-600 bg-red-50',
         },
         {
             label: 'Total Orders',
             value: counts.orders,
             trend: trends.orders,
             Icon: Package,
-            color: 'bg-green-500',
+            color: 'text-green-600 bg-green-50',
         },
     ];
 
+    const trendClass = (trendText = '') =>
+        trendText.startsWith('+')
+            ? 'text-green-700 bg-green-50'
+            : 'text-gray-500 bg-gray-100';
+
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="flex items-center justify-end">
+                <button
+                    type="button"
+                    onClick={() => fetchAll(false)}
+                    disabled={loading || isRefreshing}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed min-h-[40px]"
+                >
+                    <RefreshCw className={`w-4 h-4 shrink-0 ${isRefreshing ? 'animate-spin' : ''}`} aria-hidden />
+                    Refresh data
+                </button>
+            </div>
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat) => (
-                    <div key={stat.label} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                    <div key={stat.label} className="bg-white p-6 rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] group">
                         <div className="flex items-start justify-between">
-                            <div className={`w-12 h-12 ${stat.color} bg-opacity-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                <stat.Icon className="w-6 h-6 text-current opacity-80" aria-hidden />
+                            <div className={`w-11 h-11 ${stat.color} rounded-lg flex items-center justify-center`}>
+                                <stat.Icon className="w-6 h-6 text-current" aria-hidden />
                             </div>
                             {loading ? (
                                 <span className="h-6 w-28 bg-gray-100 rounded-full animate-pulse" />
                             ) : (
-                                <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                                <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${trendClass(stat.trend)}`}>
                                     {stat.trend}
                                 </span>
                             )}
                         </div>
                         <div className="mt-4">
-                            <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
+                            <p className="text-gray-500 text-sm">{stat.label}</p>
                             {loading ? (
                                 <div className="h-9 w-16 bg-gray-100 rounded-lg animate-pulse mt-1" />
                             ) : (
-                                <h3 className="text-3xl font-black text-gray-900 mt-1">
+                                <h3 className="text-3xl font-semibold text-gray-900 mt-1 tracking-tight">
                                     {stat.value ?? '—'}
                                 </h3>
                             )}
@@ -143,22 +171,23 @@ export default function AdminDashboard() {
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 gap-8">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-4">Quick Actions</h2>
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-1">Quick Actions</h2>
+                    <p className="text-sm text-gray-500 mb-4">Common tasks for day-to-day operations.</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <Link
                             href="/admin/products"
-                            className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl hover:bg-red-50 hover:text-[#f0312f] transition-all border border-transparent hover:border-red-100 group min-h-[120px]"
+                            className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:bg-red-50 hover:text-[#f0312f] transition-colors border border-transparent hover:border-red-100 min-h-[64px]"
                         >
-                            <Plus className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform shrink-0" aria-hidden />
-                            <span className="font-bold text-sm">Add Product</span>
+                            <Plus className="w-5 h-5 shrink-0" aria-hidden />
+                            <span className="font-medium text-sm">Add Product</span>
                         </Link>
                         <Link
                             href="/admin/donations"
-                            className="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-xl hover:bg-red-50 hover:text-[#f0312f] transition-all border border-transparent hover:border-red-100 group min-h-[120px]"
+                            className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:bg-red-50 hover:text-[#f0312f] transition-colors border border-transparent hover:border-red-100 min-h-[64px]"
                         >
-                            <FileText className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform shrink-0" aria-hidden />
-                            <span className="font-bold text-sm">View Donors</span>
+                            <FileText className="w-5 h-5 shrink-0" aria-hidden />
+                            <span className="font-medium text-sm">View Donors</span>
                         </Link>
                     </div>
                 </div>
