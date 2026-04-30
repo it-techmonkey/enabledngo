@@ -48,9 +48,15 @@ export function CartProvider({ children }) {
 
                                 const existingIndex = mergedCart.findIndex(item => (item.id === guestItem.id) || (item.id === guestItem._id));
                                 if (existingIndex > -1) {
-                                    mergedCart[existingIndex].quantity = (mergedCart[existingIndex].quantity || 1) + (guestItem.quantity || 1);
+                                    const cap = Math.min(PER_PERSON_MAX_QUANTITY, mergedCart[existingIndex].maxQuantity || PER_PERSON_MAX_QUANTITY);
+                                    mergedCart[existingIndex].quantity = Math.min(cap, (mergedCart[existingIndex].quantity || 1) + (guestItem.quantity || 1));
+                                    mergedCart[existingIndex].maxQuantity = cap;
                                 } else {
-                                    mergedCart.push(guestItem);
+                                    mergedCart.push({
+                                        ...guestItem,
+                                        quantity: 1,
+                                        maxQuantity: Math.min(PER_PERSON_MAX_QUANTITY, guestItem.maxQuantity || PER_PERSON_MAX_QUANTITY),
+                                    });
                                 }
                             });
 
@@ -84,13 +90,15 @@ export function CartProvider({ children }) {
     }, [cartItems, isInitialized, cartKey]);
 
     const DEFAULT_MAX_QUANTITY = 9;
+    const PER_PERSON_MAX_QUANTITY = 1;
 
     const isOutOfStock = (product) =>
         product.status === 'Out of Stock' || product.inStock === false;
 
     const addToCart = (product) => {
         if (isOutOfStock(product)) return;
-        const maxQty = Math.max(1, Math.min(99, Number(product.quantity) || DEFAULT_MAX_QUANTITY));
+        const stockQty = Math.max(1, Math.min(99, Number(product.quantity) || DEFAULT_MAX_QUANTITY));
+        const maxQty = Math.min(PER_PERSON_MAX_QUANTITY, stockQty);
         const normalizedId = product._id || product.id || String(Math.random());
         const normalizedProduct = {
             ...product,
@@ -123,7 +131,7 @@ export function CartProvider({ children }) {
         setCartItems((prevItems) =>
             prevItems.map((item) => {
                 if (item.id !== productId) return item;
-                const maxQty = item.maxQuantity ?? DEFAULT_MAX_QUANTITY;
+                const maxQty = Math.min(PER_PERSON_MAX_QUANTITY, item.maxQuantity ?? DEFAULT_MAX_QUANTITY);
                 const capped = Math.min(Math.max(1, quantity), maxQty);
                 return { ...item, quantity: capped };
             })

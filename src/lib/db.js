@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { supabase } from './supabase';
+import { neonQuery } from './neon';
 
 const DATA_DIR = path.join(process.cwd(), 'src/data');
 // Longer TTLs = fewer DB hits; invalidated on write
@@ -13,6 +14,7 @@ const memoryCache = new Map();
 const cacheTimestamps = new Map();
 const pendingReads = new Map(); // request coalescing: one in-flight read per key
 const SUPABASE_TIMEOUT_MS = 4000;
+const USE_NEON = !!process.env.NEON_DATABASE_URL;
 
 function getCached(key) {
     const ts = cacheTimestamps.get(key);
@@ -55,9 +57,48 @@ async function withTimeout(promise, timeoutMs = SUPABASE_TIMEOUT_MS) {
     ]);
 }
 
+async function queryNeonTable(table) {
+    const { rows } = await withTimeout(neonQuery(`SELECT * FROM ${table}`));
+    return rows || [];
+}
+
+async function upsertNeonRows(table, rows) {
+    if (!rows.length) return;
+    const columns = Object.keys(rows[0]);
+    const setClause = columns
+        .filter((c) => c !== 'id')
+        .map((c) => `${c}=EXCLUDED.${c}`)
+        .join(', ');
+    const placeholders = [];
+    const values = [];
+    let i = 1;
+    for (const row of rows) {
+        placeholders.push(`(${columns.map(() => `$${i++}`).join(',')})`);
+        for (const col of columns) {
+            const v = row[col];
+            values.push(v !== null && typeof v === 'object' ? JSON.stringify(v) : v);
+        }
+    }
+    const sql = `INSERT INTO ${table} (${columns.join(',')}) VALUES ${placeholders.join(',')} ON CONFLICT (id) DO UPDATE SET ${setClause}`;
+    await withTimeout(neonQuery(sql, values));
+}
+
 /** Delete a single row by id from Supabase (and invalidate cache). Use before saving filtered array so DB stays in sync. */
 export async function deleteRow(filename, id) {
     invalidateCached(filename);
+    if (USE_NEON) {
+        const table = TABLE_MAP[filename];
+        if (table && id != null) {
+            try {
+                await withTimeout(neonQuery(`DELETE FROM ${table} WHERE id = $1`, [String(id)]));
+                return true;
+            } catch (err) {
+                console.error(`Neon delete error for ${table}:`, err);
+                return false;
+            }
+        }
+        return false;
+    }
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         const table = TABLE_MAP[filename];
         if (table && id != null) {
@@ -186,6 +227,27 @@ const FIELD_MAPPINGS = {
 };
 
 async function doReadData(filename) {
+    if (USE_NEON) {
+        const table = TABLE_MAP[filename];
+        if (table) {
+            try {
+                const data = await queryNeonTable(table);
+                let result = FIELD_MAPPINGS[table] ? (data || []).map(FIELD_MAPPINGS[table].from) : (data || []);
+                if (table === 'children' && (!result || result.length === 0)) {
+                    const filePath = getFilePath(filename);
+                    if (fs.existsSync(filePath)) {
+                        const content = fs.readFileSync(filePath, 'utf8');
+                        const local = JSON.parse(content || '[]');
+                        result = Array.isArray(local) ? local : [];
+                    }
+                }
+                setCached(filename, result);
+                return result;
+            } catch (err) {
+                console.error(`Neon read error for ${table}:`, err);
+            }
+        }
+    }
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         const table = TABLE_MAP[filename];
         if (table) {
@@ -251,6 +313,29 @@ export async function readData(filename) {
 
 export async function writeData(filename, data) {
     invalidateCached(filename);
+    if (USE_NEON) {
+        const table = TABLE_MAP[filename];
+        if (table) {
+            try {
+                let mappedData = Array.isArray(data) ? data : [data];
+                if (FIELD_MAPPINGS[table]) {
+                    mappedData = mappedData.map(FIELD_MAPPINGS[table].to);
+                }
+                await upsertNeonRows(table, mappedData);
+                try {
+                    const filePath = getFilePath(filename);
+                    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+                } catch (e) {
+                    console.warn(`Local sync write for ${filename}:`, e?.message);
+                }
+                return true;
+            } catch (err) {
+                console.error(`Neon write error for ${table}:`, err);
+                return false;
+            }
+        }
+        return false;
+    }
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         const table = TABLE_MAP[filename];
         if (table) {
@@ -372,6 +457,17 @@ export async function deleteUserById(userId) {
 export async function getUserByEmail(email) {
     const emailLower = (email || '').trim().toLowerCase();
     if (!emailLower) return null;
+
+    if (USE_NEON) {
+        try {
+            const { rows } = await withTimeout(
+                neonQuery('SELECT * FROM users WHERE lower(email) = $1 LIMIT 1', [emailLower])
+            );
+            return rows?.[0] || null;
+        } catch (err) {
+            console.error('Neon get user by email error:', err);
+        }
+    }
 
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         try {
