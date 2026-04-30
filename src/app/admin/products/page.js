@@ -382,7 +382,15 @@ export default function AdminProductsPage() {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden border border-gray-100 shrink-0">
-                                                <img src={product.image} alt="" className="w-full h-full object-contain" onError={(e) => e.target.src = '/Girly.png'} />
+                                                <img
+                                                    src={product.image}
+                                                    alt=""
+                                                    className="w-full h-full object-contain"
+                                                    onError={(e) => {
+                                                        e.currentTarget.onerror = null;
+                                                        e.currentTarget.src = '/images/Girly.png';
+                                                    }}
+                                                />
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="font-semibold text-gray-800 truncate max-w-[280px]">{product.name}</p>
@@ -484,7 +492,15 @@ export default function AdminProductsPage() {
                         </div>
                         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl mb-6">
                             <div className="w-10 h-10 bg-white rounded-lg border border-gray-100 overflow-hidden shrink-0">
-                                <img src={deleteTarget.image} alt="" className="w-full h-full object-contain" onError={(e) => e.target.src = '/Girly.png'} />
+                                <img
+                                    src={deleteTarget.image}
+                                    alt=""
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                        e.currentTarget.onerror = null;
+                                        e.currentTarget.src = '/images/Girly.png';
+                                    }}
+                                />
                             </div>
                             <div>
                                 <p className="font-bold text-gray-800 text-sm">{deleteTarget.name}</p>

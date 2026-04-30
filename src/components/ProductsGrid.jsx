@@ -41,7 +41,7 @@ export default async function ProductsGrid() {
                             >
                                 <div className="aspect-[4/3] bg-gray-50 p-6 overflow-hidden relative">
                                     <img
-                                        src={product.image || '/Girly.png'}
+                                        src={product.image || '/images/Girly.png'}
                                         alt={product.name}
                                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                                         loading="lazy"

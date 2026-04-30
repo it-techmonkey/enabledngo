@@ -103,7 +103,10 @@ export default function BeADonorPage() {
                           className="w-full h-64 sm:h-80 object-cover"
                           loading="lazy"
                           decoding="async"
-                          onError={(e) => e.target.src = '/Girly.png'}
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = '/images/Girly.png';
+                          }}
                         />
                       </div>
                       <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">

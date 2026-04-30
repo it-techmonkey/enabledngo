@@ -105,7 +105,7 @@ export function CartProvider({ children }) {
             id: normalizedId,
             name: product.name || product.title || 'Product',
             price: Number(product.price) || 0,
-            image: product.image || product.imageUrl || '/Girly.png',
+            image: product.image || product.imageUrl || '/images/Girly.png',
             maxQuantity: maxQty,
         };
         setCartItems((prevItems) => {

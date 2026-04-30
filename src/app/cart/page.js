@@ -106,10 +106,13 @@ export default function CartPage() {
                         <div className="w-full sm:w-28 shrink-0 flex flex-col gap-2">
                           <div className="h-40 sm:h-28 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center">
                             <img
-                              src={item.image || '/Girly.png'}
+                              src={item.image || '/images/Girly.png'}
                               alt={item.name}
                               className="w-full h-full object-contain p-2"
-                              onError={(e) => { e.target.src = '/Girly.png'; }}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = '/images/Girly.png';
+                              }}
                             />
                           </div>
                           <div className="flex flex-col gap-1">
