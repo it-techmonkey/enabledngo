@@ -8,6 +8,13 @@ import { FileDown, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 8;
 const PRODUCTS_CACHE_KEY = 'enabledngo_products_cache_v1';
+const FALLBACK_IMAGE = '/images/Girly.png';
+
+function resolveImageSrc(product) {
+  const src = product.image || product.imageUrl || FALLBACK_IMAGE;
+  // Normalize old incorrect path stored in some seed/db rows.
+  return src === '/Girly.png' ? FALLBACK_IMAGE : src;
+}
 
 export default function ProductsPage() {
   const { addToCart, cartCount } = useCart();
@@ -203,12 +210,15 @@ export default function ProductsPage() {
                       >
                         <div className="relative aspect-video overflow-hidden bg-gray-50 flex items-center justify-center p-4">
                           <img
-                            src={product.image || product.imageUrl || '/Girly.png'}
+                            src={resolveImageSrc(product)}
                             alt={product.name || product.title || 'Product'}
                             className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                             loading="lazy"
                             decoding="async"
-                            onError={(e) => { e.target.src = '/Girly.png'; }}
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src = FALLBACK_IMAGE;
+                            }}
                           />
                           {isNew && (
                             <span className="absolute top-2 left-2 bg-[#f0312f] text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md">

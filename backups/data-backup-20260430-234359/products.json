@@ -15,8 +15,7 @@
       "Isotonic Solution",
       "2x 100ml Bottles",
       "Daily Hygiene"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t2",
@@ -34,8 +33,7 @@
       "Easy Application",
       "Saline Based",
       "10ml Bottle"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t3",
@@ -53,8 +51,7 @@
       "Diarrhea Management",
       "Oral Rehydration Adjunct",
       "60ml Syrup"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t4",
@@ -72,8 +69,7 @@
       "Soft PVC",
       "Standard Connectors",
       "Bundle of 3"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t5",
@@ -91,8 +87,7 @@
       "Blue Line Marker",
       "Biocompatible PVC",
       "Radiopaque Line"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t6",
@@ -110,8 +105,7 @@
       "Anti-Kink",
       "2-Meter Length",
       "Sterile Pack"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t7",
@@ -149,8 +143,7 @@
       "Bacterial Protection",
       "7E Series Compatible",
       "Pack of 6"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t9",
@@ -168,8 +161,7 @@
       "Sterile Kit",
       "Emergency Ready",
       "Bundle of 3"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t10",
@@ -207,8 +199,7 @@
       "Sterile",
       "pH Balanced",
       "82g Tube"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t12",
@@ -226,8 +217,7 @@
       "Pressure Control",
       "Reliable Design",
       "Clinical Grade"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t13",
@@ -245,8 +235,7 @@
       "High-Volume Cuff",
       "Murphy Eye",
       "Sizes 2.5-8.0"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t14",
@@ -264,8 +253,7 @@
       "Swivel Action",
       "Vented Option",
       "Lightweight"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t15",
@@ -283,8 +271,7 @@
       "Skin Friendly",
       "One Size Fits Most",
       "Moisture Wicking"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "t16",
@@ -302,13 +289,12 @@
       "Reduced Mucus",
       "Compact Design",
       "Bundle of 2"
-    ],
-    "quantity": 2
+    ]
   },
   {
     "id": "prod-nasogastrix-fr-5",
     "name": "nasogastrix fr 5",
-    "price": 0,
+    "price": 100000,
     "description": "nasogastrix fr 5 medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",
@@ -323,7 +309,7 @@
   {
     "id": "prod-bionector",
     "name": "bionector",
-    "price": 0,
+    "price": 100000,
     "description": "bionector medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",
@@ -338,7 +324,7 @@
   {
     "id": "prod-cutimed-hydro",
     "name": "cutimed hydro",
-    "price": 0,
+    "price": 100000,
     "description": "cutimed hydro medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",
@@ -353,7 +339,7 @@
   {
     "id": "prod-blue-line-trach-tube-3-0",
     "name": "Blue line trach tube 3.0",
-    "price": 0,
+    "price": 100000,
     "description": "Blue line trach tube 3.0 medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",
@@ -368,7 +354,7 @@
   {
     "id": "prod-pediatric-neonatal-mini-trach",
     "name": "Pediatric neonatal mini trach",
-    "price": 0,
+    "price": 100000,
     "description": "Pediatric neonatal mini trach medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",
@@ -383,7 +369,7 @@
   {
     "id": "prod-optilube",
     "name": "Optilube",
-    "price": 0,
+    "price": 100000,
     "description": "Optilube medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",
@@ -398,7 +384,7 @@
   {
     "id": "prod-neonatal-resuscitation",
     "name": "Neonatal resuscitation",
-    "price": 0,
+    "price": 100000,
     "description": "Neonatal resuscitation medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",
@@ -413,7 +399,7 @@
   {
     "id": "prod-tracheal-tube",
     "name": "Tracheal tube",
-    "price": 0,
+    "price": 100000,
     "description": "Tracheal tube medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",
@@ -428,7 +414,7 @@
   {
     "id": "prod-elbow-adapter",
     "name": "Elbow adapter",
-    "price": 0,
+    "price": 100000,
     "description": "Elbow adapter medical supply",
     "image": "/Girly.png",
     "category": "Medical Supplies",

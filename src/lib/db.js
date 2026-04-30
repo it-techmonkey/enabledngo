@@ -13,7 +13,7 @@ const getFilePath = (filename) => path.join(DATA_DIR, filename);
 const memoryCache = new Map();
 const cacheTimestamps = new Map();
 const pendingReads = new Map(); // request coalescing: one in-flight read per key
-const SUPABASE_TIMEOUT_MS = 4000;
+const SUPABASE_TIMEOUT_MS = 15000;
 const USE_NEON = !!process.env.NEON_DATABASE_URL;
 
 function getCached(key) {
@@ -246,6 +246,19 @@ async function doReadData(filename) {
             } catch (err) {
                 console.error(`Neon read error for ${table}:`, err);
             }
+        }
+        // Neon mode: if DB read fails, fall back directly to local file.
+        // Do not attempt Supabase fallback when Neon is configured.
+        try {
+            const filePath = getFilePath(filename);
+            if (!fs.existsSync(filePath)) return [];
+            const content = fs.readFileSync(filePath, 'utf8');
+            const result = JSON.parse(content || '[]');
+            setCached(filename, result);
+            return result;
+        } catch (error) {
+            console.error(`Error reading ${filename}:`, error);
+            return [];
         }
     }
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
