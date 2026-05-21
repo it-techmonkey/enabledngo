@@ -33,7 +33,14 @@ export function AuthProvider({ children }) {
             if (data.success) {
                 setUser(data.user);
                 localStorage.setItem('enabled_user', JSON.stringify(data.user));
-                return { success: true };
+                if (data.user?.role === 'admin') {
+                    sessionStorage.setItem('admin_token', 'enabled_admin_authenticated');
+                    sessionStorage.setItem('admin_email', data.user.email);
+                } else {
+                    sessionStorage.removeItem('admin_token');
+                    sessionStorage.removeItem('admin_email');
+                }
+                return { success: true, user: data.user };
             } else {
                 return { success: false, message: data.message };
             }
@@ -69,6 +76,8 @@ export function AuthProvider({ children }) {
     const logout = () => {
         setUser(null);
         localStorage.removeItem('enabled_user');
+        sessionStorage.removeItem('admin_token');
+        sessionStorage.removeItem('admin_email');
     };
 
     return (

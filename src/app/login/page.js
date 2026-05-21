@@ -29,7 +29,7 @@ export default function LoginPage() {
         try {
             const result = await login(formData.email, formData.password);
             if (result.success) {
-                router.push('/');
+                router.push(result.user?.role === 'admin' ? '/admin' : '/');
             } else {
                 setErrorMsg(result.message || 'Invalid email or password.');
             }

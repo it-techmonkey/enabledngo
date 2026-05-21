@@ -17,9 +17,20 @@ export default function AdminLayout({ children }) {
     useEffect(() => {
         if (pathname !== '/admin/login') {
             const token = sessionStorage.getItem('admin_token');
-            if (!token) {
-                router.push('/admin/login');
+            const savedUser = localStorage.getItem('enabled_user');
+            let isAdmin = false;
+
+            try {
+                isAdmin = JSON.parse(savedUser)?.role === 'admin';
+            } catch {}
+
+            if (!token && !isAdmin) {
+                router.push('/login');
             } else {
+                if (isAdmin && !token) {
+                    sessionStorage.setItem('admin_token', 'enabled_admin_authenticated');
+                    sessionStorage.setItem('admin_email', JSON.parse(savedUser).email);
+                }
                 setIsAuthChecking(false);
             }
         } else {
@@ -53,7 +64,8 @@ export default function AdminLayout({ children }) {
     const handleLogout = () => {
         sessionStorage.removeItem('admin_token');
         sessionStorage.removeItem('admin_email');
-        router.push('/admin/login');
+        localStorage.removeItem('enabled_user');
+        router.push('/login');
     };
 
     const navItems = [
