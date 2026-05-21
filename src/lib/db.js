@@ -409,30 +409,55 @@ export const saveDonorRegistrations = (data) => writeData('donor_registrations.j
 export const getChildren = () => readData('children.json');
 export const saveChildren = (data) => writeData('children.json', data);
 
-/** Insert a single user (direct to Supabase when available). */
+/** Insert a single user using the same source order as reads. */
 export async function insertUser(user) {
     invalidateCached('users.json');
+    const syncLocalUser = () => {
+        const filePath = getFilePath('users.json');
+        let list = [];
+        if (fs.existsSync(filePath)) {
+            try {
+                const content = fs.readFileSync(filePath, 'utf8');
+                list = JSON.parse(content || '[]');
+            } catch (_) {}
+        }
+        const idx = list.findIndex((u) => u.id === user.id || (u.email || '').toLowerCase() === user.email);
+        if (idx >= 0) list[idx] = user;
+        else list.push(user);
+        fs.writeFileSync(filePath, JSON.stringify(list, null, 2), 'utf8');
+    };
+
+    if (USE_NEON) {
+        try {
+            await upsertNeonRows('users', [user]);
+            try {
+                syncLocalUser();
+            } catch (e) {
+                console.warn('Local sync write for users.json:', e?.message);
+            }
+            return true;
+        } catch (err) {
+            console.error('Neon insert user error:', err);
+        }
+    }
+
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         try {
             const { error } = await withTimeout(supabase.from('users').insert(user));
             if (error) throw error;
+            try {
+                syncLocalUser();
+            } catch (e) {
+                console.warn('Local sync write for users.json:', e?.message);
+            }
             return true;
         } catch (err) {
             console.error('Supabase insert user error:', err);
-            return false;
         }
     }
-    const filePath = getFilePath('users.json');
-    let list = [];
-    if (fs.existsSync(filePath)) {
-        try {
-            const content = fs.readFileSync(filePath, 'utf8');
-            list = JSON.parse(content || '[]');
-        } catch (_) {}
-    }
-    list.push(user);
+
     try {
-        fs.writeFileSync(filePath, JSON.stringify(list, null, 2), 'utf8');
+        syncLocalUser();
         return true;
     } catch (err) {
         console.error('Error writing users.json:', err);
@@ -476,7 +501,7 @@ export async function getUserByEmail(email) {
             const { rows } = await withTimeout(
                 neonQuery('SELECT * FROM users WHERE lower(email) = $1 LIMIT 1', [emailLower])
             );
-            return rows?.[0] || null;
+            if (rows?.[0]) return rows[0];
         } catch (err) {
             console.error('Neon get user by email error:', err);
         }
@@ -488,7 +513,7 @@ export async function getUserByEmail(email) {
                 supabase.from('users').select('*').eq('email', emailLower).limit(1).maybeSingle()
             );
             if (error) throw error;
-            return data || null;
+            if (data) return data;
         } catch (err) {
             console.error('Supabase get user by email error:', err);
         }

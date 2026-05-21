@@ -33,5 +33,12 @@
     "email": "manasgedam635@gmail.com",
     "password": "Manas@1234",
     "role": "user"
+  },
+  {
+    "id": "u-1779392281893",
+    "name": "Test User",
+    "email": "manasgedam26@gmail.com",
+    "password": "password123",
+    "role": "user"
   }
 ]
