@@ -1,4 +1,5 @@
 import { getProducts, saveProducts, deleteRow } from '@/lib/db';
+import { revalidatePath } from 'next/cache';
 
 export async function GET() {
     const products = await getProducts();
@@ -26,6 +27,8 @@ export async function POST(req) {
             });
         }
 
+        revalidatePath('/products');
+        revalidatePath('/api/products');
         return new Response(JSON.stringify({ success: true, product }), {
             status: 201,
             headers: { 'Content-Type': 'application/json' },
@@ -60,6 +63,8 @@ export async function PUT(req) {
             });
         }
 
+        revalidatePath('/products');
+        revalidatePath('/api/products');
         return new Response(JSON.stringify({ success: true, product: products[idx] }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -108,6 +113,8 @@ export async function DELETE(req) {
             });
         }
 
+        revalidatePath('/products');
+        revalidatePath('/api/products');
         return new Response(JSON.stringify({ success: true }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },

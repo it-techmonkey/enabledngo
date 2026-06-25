@@ -1,5 +1,5 @@
 import { getProducts } from '@/lib/db';
-export const revalidate = 300;
+export const revalidate = 0; // Always fetch fresh from Neon DB
 
 export async function GET() {
     try {
@@ -8,7 +8,7 @@ export async function GET() {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+                'Cache-Control': 'no-store, no-cache, must-revalidate',
             },
         });
     } catch (err) {
