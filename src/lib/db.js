@@ -245,17 +245,25 @@ async function doReadData(filename) {
                 return result;
             } catch (err) {
                 console.error(`Neon read error for ${table}:`, err);
+                // CRITICAL FIX: If we already have stale data in cache (Neon was working before),
+                // do NOT overwrite it with the local JSON file which may be outdated (especially
+                // on Vercel where the filesystem is read-only and products.json never gets updated).
+                // Instead, re-throw so the stale-while-revalidate in readData keeps serving stale
+                // (but correct) Neon data until Neon wakes up from sleep.
+                if (getStale(filename) !== undefined) {
+                    throw err;
+                }
+                // No stale data = cold start: fall through to local file below.
             }
         }
-        // Neon mode: if DB read fails, fall back directly to local file.
-        // Do not attempt Supabase fallback when Neon is configured.
+        // Cold-start fallback: Neon failed on first-ever read, use local file as emergency.
+        // Do NOT call setCached here — so the next request retries Neon immediately instead
+        // of serving stale local data for the full CACHE_TTL_MS duration.
         try {
             const filePath = getFilePath(filename);
             if (!fs.existsSync(filePath)) return [];
             const content = fs.readFileSync(filePath, 'utf8');
-            const result = JSON.parse(content || '[]');
-            setCached(filename, result);
-            return result;
+            return JSON.parse(content || '[]'); // No setCached — retries Neon next time
         } catch (error) {
             console.error(`Error reading ${filename}:`, error);
             return [];
